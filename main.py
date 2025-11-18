@@ -1,9 +1,7 @@
 import numpy as np
 import math
-import random
 from PIL import Image, ImageOps
 img_mat = np.zeros((2000,2000,3), dtype=np.uint8)
-z_buffer = np.full((2000, 2000), float('inf'))
 """"
 for i in range(600):
     for j in range (800):
@@ -109,66 +107,6 @@ for k in range (13):
     #draw_line4(img_mat, x0, y0, x1, y1, (255, 255, 255))
     #draw_line5(img_mat, x0, y0, x1, y1, (255, 255, 255))
 """
-"""
-def lamda(x0, y0, x1, y1, x2, y2, x, y):
-    if ((1-((x-x2)*(y1-y2)-(x1-x2)*(y-y2))/((x0-x2)*(y1-y2)-(x1-x2)*(y0-y2))-((x0-x2)*(y-y2)-(x-x2)*(y0-y2))/((x0-x2)*(y1-y2)-(x1-x2)*(y0-y2)))>=0
-            and (((x-x2)*(y1-y2)-(x1-x2)*(y-y2))/((x0-x2)*(y1-y2)-(x1-x2)*(y0-y2)))>=0
-            and (((x0-x2)*(y-y2)-(x-x2)*(y0-y2))/((x0-x2)*(y1-y2)-(x1-x2)*(y0-y2)))>=0):
-        return True
-    return False;
-"""
-
-def lamda1(x0, y0, x1, y1, x2, y2, x, y):
-    denominator = ((x0 - x2) * (y1 - y2) - (x1 - x2) * (y0 - y2))
-    if abs(denominator) < 1e-10:
-        return 0
-    return ((x0 - x2) * (y - y2) - (x - x2) * (y0 - y2))/denominator
-def lamda0(x0, y0, x1, y1, x2, y2, x, y):
-    denominator = ((x0 - x2) * (y1 - y2) - (x1 - x2) * (y0 - y2))
-    if abs(denominator) < 1e-10:
-        return 0
-    return ((x - x2) * (y1 - y2) - (x1 - x2) * (y - y2)) / denominator
-def lamda2(x0, y0, x1, y1, x2, y2, x, y):return 1-lamda0(x0,y0, x1, y1, x2, y2, x, y)-lamda1(x0, y0, x1, y1, x2, y2, x, y)
-
-def normal(v1, v2, v3):
-    norm = []
-    v = [v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]]
-    u = [v2[0] - v3[0], v2[1] - v3[1], v2[2] - v3[2]]
-
-    nx = u[1] * v[2] - u[2] * v[1]
-    ny = u[2] * v[0] - u[0] * v[2]
-    nz = u[0] * v[1] - u[1] * v[0]
-    length = math.sqrt(nx * nx + ny * ny + nz * nz)
-
-
-    if length > 0:
-        nx = nx / length
-        ny = ny / length
-        nz = nz / length
-
-    return [nx, ny, nz]
-def proverka(v1,v2,v3):
-    denominator =np.linalg.norm(normal(v1,v2,v3))
-    if abs(denominator) < 1e-10:
-        return 0
-    return np.dot(normal(v1,v2,v3),[0,0,1])/denominator
-def otrisovka(image, x0, y0, x1, y1,x2,y2,z0,z1,z2,color):
-    xmin = max(0, min(int(x0), int(x1), int(x2)))
-    xmax = min(image.shape[1] - 1, max(int(x0), int(x1), int(x2)))
-    ymin = max(0, min(int(y0), int(y1), int(y2)))
-    ymax = min(image.shape[0] - 1, max(int(y0), int(y1), int(y2)))
-
-
-    for y in range(ymin, ymax + 1):
-        for x in range(xmin, xmax + 1):
-            if ( lamda0(x0,y0,x1,y1,x2,y2,x,y)>=0 and lamda1(x0,y0,x1,y1,x2,y2,x,y)>=0 and
-                lamda2(x0, y0, x1, y1, x2, y2, x, y) >= 0):
-                if ((proverka([x0,y0,z0],[x1,y1,z1],[x2,y2,z2])<0)):
-
-                    m=lamda0(x0, y0, x1, y1, x2, y2, x, y)*z0+lamda1(x0, y0, x1, y1, x2, y2, x, y)*z1+lamda2(x0, y0, x1, y1, x2, y2, x, y)*z2
-                    if (m<z_buffer[y,x]):
-                        image[y, x] = color
-                        z_buffer[y,x] = m
 
 
 file=open('model_1.obj')
@@ -182,7 +120,6 @@ for i in file:
         b.append(float (word[2]))
         b.append(float (word[3]))
         a.append(b)
-
 print(a)
 n=len(a)
 for i in range(n-1):
@@ -199,22 +136,15 @@ for i in file:
         z = int(word[3].split('/')[0])
         c.append([x,y,z])
 for k in range(len(c)):
-    v0_orig = a[c[k][0] - 1]
-    v1_orig = a[c[k][1] - 1]
-    v2_orig = a[c[k][2] - 1]
-    x0 = float(a[c[k][0]- 1][0] *10000+1000)
-    y0 = float(a[c[k][0] - 1][1] * 10000 + 1000)
-    x1 = float(a[c[k][1] - 1][0] * 10000 + 1000)
-    y1 =float(a[c[k][1] - 1][1] *10000 + 1000)
-    x2 = float(a[c[k][2] - 1][0] * 10000 + 1000)
-    y2 = float(a[c[k][2] - 1][1] * 10000 + 1000)
-    z0 = v0_orig[2]*10000+1000
-    z1 = v1_orig[2]*10000+1000
-    z2 = v2_orig[2]*10000+1000
-    color = [-255*(proverka([x0,y0,z0],[x1,y1,z1],[x2,y2,z2])),0,0]
-
-
-    otrisovka(img_mat, x0, y0, x1, y1, x2, y2,z0,z1,z2, color)
+    x0 =int(a[c[k][0]- 1][0] *10000+1000)
+    y0 = int(a[c[k][0] - 1][1] * 10000 + 1000)
+    x1 = int(a[c[k][1] - 1][0] * 10000 + 1000)
+    y1 =int(a[c[k][1] - 1][1] *10000 + 1000)
+    x2 = int(a[c[k][2] - 1][0] * 10000 + 1000)
+    y2 = int(a[c[k][2] - 1][1] * 10000 + 1000)
+    draw_line5(img_mat, x0, y0, x1, y1, (255, 255, 255))
+    draw_line5(img_mat, x1, y1, x2, y2, (255, 255, 255))
+    draw_line5(img_mat, x2, y2, x0, y0, (255, 255, 255))
 
 
 img=Image.fromarray(img_mat, mode='RGB')
