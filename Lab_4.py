@@ -141,9 +141,9 @@ def create_coord(alpha, beta, gamma):
 
 
 def finalfunction(vertex, alpha, beta, gamma, t):
-    # Создаем общую матрцу поворота
+   
     R = create_coord(alpha, beta, gamma)
-    # Применяем преобразование: X' = R * X + T
+    
     transformed_vertex = R @ np.array(vertex) + np.array(t)
     return transformed_vertex.tolist()
 
@@ -170,12 +170,12 @@ def normal(v1, v2, v3):
     norm = []
     v = [v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]]
     u = [v2[0] - v3[0], v2[1] - v3[1], v2[2] - v3[2]]
-    # Вычисляем векторное произведение u × v
+  
     nx = u[1] * v[2] - u[2] * v[1]
     ny = u[2] * v[0] - u[0] * v[2]
     nz = u[0] * v[1] - u[1] * v[0]
     length = math.sqrt(nx * nx + ny * ny + nz * nz)
-    # Нормализуем (делаем длину = 1)
+   
     if length > 0:
         nx = nx / length
         ny = ny / length
@@ -307,13 +307,13 @@ def otrisovka(prov,image, x0, y0, x1, y1, x2, y2, z0, z1, z2, texture, uv0, uv1,
                         # Получение цвета из текстуры
                         texture_color = get_texture_color(texture, u_texture, v_texture)
 
-                        # Комбинирование с освещением (если есть)
+                        # Комбинирование с освещением
                         if vertex_normals is not None and vertex_indices is not None:
                             I_interpolated = l0 * I0 + l1 * I1 + l2 * I2
                             # Умножаем цвет текстуры на освещение
-                            color = [int(texture_color[0] * I_interpolated),
-                                     int(texture_color[1] * I_interpolated),
-                                     int(texture_color[2] * I_interpolated)]
+                            color = [int(texture_color[0] * I_interpolated*I0),
+                                     int(texture_color[1] * I_interpolated*I1),
+                                     int(texture_color[2] * I_interpolated*I2)]
                         else:
                             color = texture_color
 
